@@ -1,6 +1,8 @@
 //import { useNavigate } from "react-router-dom";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { ButtonLogin } from "./components/ButtonLogin";
+import { InputLogin } from "./components/InputLogin";
 
 export const Login = () => {
   /*   const history = useNavigate();
@@ -8,39 +10,78 @@ export const Login = () => {
   const handleClick = () => {
     history("./pagina-inicial");
   }; */
-
+  const inputPassworRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  const handleEntrar = () => {
+  const emailLength = useMemo(() => {
+    return email.length * 1000;
+  }, [email.length]);
+
+  /*   useEffect(() => {
+    console.log(email);
+  }, [email]);
+
+  useEffect(() => {
+    console.log(senha);
+  }, [senha]); */
+
+  const handleEntrar = useCallback(() => {
     console.log(email);
     console.log(senha);
-  };
+    console.log(inputPassworRef.current);
+  }, [email, senha]);
 
   return (
     <div>
       <form>
-        <label>
+        <p>Quantidade de caracteres no email: {emailLength}</p>
+        <InputLogin
+          label="Email"
+          value={email}
+          onChange={(newValue) => setEmail(newValue)}
+          onPressEnter={() => inputPassworRef.current?.focus()}
+        />
+
+        {/*  <label>
           <span>Email</span>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' ? inputPassworRef.current?.focus() : undefined}
           />
-        </label>
+        </label> */}
 
-        <label>
+        <InputLogin
+          type="password"
+          label="Senha"
+          value={senha}
+          ref={inputPassworRef}
+          onChange={(newValue) => setSenha(newValue)}
+          onPressEnter={() => handleEntrar()}
+        />
+
+        {/* <label>
           <span>Senha</span>
           <input
             type="password"
             value={senha}
+            ref={inputPassworRef}
             onChange={(e) => setSenha(e.target.value)}
           />
-        </label>
+        </label> */}
 
-        <button type="button" onClick={handleEntrar}>
+        {/*    <button type="button" onClick={handleEntrar}>
           Entrar
-        </button>
+        </button> */}
+
+        <ButtonLogin type="button" onClick={handleEntrar}>
+          Entrar
+        </ButtonLogin>
+        <ButtonLogin type="button" onClick={handleEntrar}>
+          Cadastre-se
+        </ButtonLogin>
       </form>
     </div>
   );
