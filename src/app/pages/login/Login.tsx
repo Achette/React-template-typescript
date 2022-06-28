@@ -1,9 +1,9 @@
 //import { useNavigate } from "react-router-dom";
 
-import { useCallback, useMemo, useState, useRef, useContext } from "react";
+import { useCallback, useMemo, useState, useRef } from "react";
 import { ButtonLogin } from "./components/ButtonLogin";
 import { InputLogin } from "./components/InputLogin";
-import { UsuarioLogadoContext } from "../../shared/contexts";
+import { useUsuarioLogado } from "../../shared/hooks";
 
 export const Login = () => {
   /*   const history = useNavigate();
@@ -12,7 +12,7 @@ export const Login = () => {
     history("./pagina-inicial");
   }; */
   const inputPassworRef = useRef<HTMLInputElement>(null);
-  const {nomeDoUsuario} = useContext(UsuarioLogadoContext);
+  const {nomeDoUsuario} = useUsuarioLogado();
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
