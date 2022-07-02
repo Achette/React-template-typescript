@@ -9,41 +9,80 @@ interface ITarefa {
 }
 
 export const AddingDB = () => {
-
   const [list, setList] = useState<ITarefa[]>([]);
 
   useEffect(() => {
-    TasksServices.getAll()
-    .then((result) => {
-      if(result instanceof ApiException) {
-        alert(result.message)
+    TasksServices.getAll().then((result) => {
+      if (result instanceof ApiException) {
+        alert(result.message);
       } else {
-        setList(result)
+        setList(result);
       }
-    })
-  }, [])
+    });
+  }, []);
 
   const handleInputKeyDown: React.KeyboardEventHandler<HTMLInputElement> =
-    useCallback((e) => {
-        if(e.key === 'Enter') {
-            if(e.currentTarget.value.trim().length === 0) return
+    useCallback(
+      (e) => {
+        if (e.key === "Enter") {
+          if (e.currentTarget.value.trim().length === 0) return;
 
-            const value = e.currentTarget.value
-            e.currentTarget.value = ''
+          const value = e.currentTarget.value;
+          e.currentTarget.value = "";
 
-            if(list.some((listItem) => listItem.title === value)) return
-            
-            TasksServices.create({ title: value, isCompleted: false, })
-            .then((result) => {
-              if(result instanceof ApiException) {
-                alert(result.message)
+          if (list.some((listItem) => listItem.title === value)) return;
+
+          TasksServices.create({ title: value, isCompleted: false }).then(
+            (result) => {
+              if (result instanceof ApiException) {
+                alert(result.message);
               } else {
-                setList((oldList) => [...oldList, result]
-              )
+                setList((oldList) => [...oldList, result]);
               }
-            })
+            }
+          );
         }
-    }, [list]);
+      },
+      [list]
+    );
+
+  const handleToggleComplete = useCallback(
+    (id: number) => {
+      const updateTask = list.find((task) => task.id === id);
+      if (!updateTask) return;
+
+      TasksServices.updateById(id, {
+        ...updateTask,
+        isCompleted: !updateTask.isCompleted,
+      }).then((result) => {
+        if (result instanceof ApiException) {
+          alert(result.message);
+        } else {
+          setList((oldList) => {
+            return oldList.map((oldListItem) => {
+              if (oldListItem.id === id) return result;
+              return oldListItem;
+            });
+          });
+        }
+      });
+    },
+    [list]
+  );
+
+  const handleDelete = useCallback((id: number) => {
+     
+      TasksServices.deleteById(id).then((result) => {
+        if (result instanceof ApiException) {
+          alert(result.message);
+        } else {
+          setList((oldList) => {
+            return oldList.filter((oldListItem) => oldListItem.id !== id);
+          });
+        }
+      });
+    }, []
+  );
 
   return (
     <div>
@@ -51,7 +90,10 @@ export const AddingDB = () => {
 
       <input onKeyDown={handleInputKeyDown} />
 
-      <p>Completed tasks: {list.filter((listItem) => listItem.isCompleted).length}</p>
+      <p>
+        Completed tasks:{" "}
+        {list.filter((listItem) => listItem.isCompleted).length}
+      </p>
 
       <ul>
         {list.map((listItem, index) => {
@@ -60,23 +102,10 @@ export const AddingDB = () => {
               <input
                 type="checkbox"
                 checked={listItem.isCompleted}
-                onChange={() => {
-                  setList((oldList) => {
-                    return oldList.map((oldListItem) => {
-                      const newIsCompleted =
-                        oldListItem.title === listItem.title
-                          ? !oldListItem.isCompleted
-                          : oldListItem.isCompleted;
-
-                      return {
-                        ...oldListItem,
-                        isCompleted: newIsCompleted,
-                      };
-                    });
-                  });
-                }}
+                onChange={() => handleToggleComplete(listItem.id)}
               />
               {listItem.title}
+              <button onClick={() => handleDelete(listItem.id)}>Apagar</button>
             </li>
           );
         })}
