@@ -1,4 +1,6 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { ApiException } from "../../shared/services/api/ApiException";
+import { TasksServices } from "../../shared/services/api/tasks/TasksServices";
 
 interface ITarefa {
   id: number;
@@ -7,7 +9,19 @@ interface ITarefa {
 }
 
 export const AddingDB = () => {
+
   const [list, setList] = useState<ITarefa[]>([]);
+
+  useEffect(() => {
+    TasksServices.getAll()
+    .then((result) => {
+      if(result instanceof ApiException) {
+        alert(result.message)
+      } else {
+        setList(result)
+      }
+    })
+  }, [])
 
   const handleInputKeyDown: React.KeyboardEventHandler<HTMLInputElement> =
     useCallback((e) => {
@@ -17,20 +31,19 @@ export const AddingDB = () => {
             const value = e.currentTarget.value
             e.currentTarget.value = ''
 
-            setList((oldList) => {
-                if(oldList.some((listItem) => listItem.title === value)) return oldList
-
-                return [
-                    ...oldList,
-                    {
-                        id: oldList.length,
-                        title: value,
-                        isCompleted: false,
-                    }
-                ]
+            if(list.some((listItem) => listItem.title === value)) return
+            
+            TasksServices.create({ title: value, isCompleted: false, })
+            .then((result) => {
+              if(result instanceof ApiException) {
+                alert(result.message)
+              } else {
+                setList((oldList) => [...oldList, result]
+              )
+              }
             })
         }
-    }, []);
+    }, [list]);
 
   return (
     <div>
@@ -38,7 +51,7 @@ export const AddingDB = () => {
 
       <input onKeyDown={handleInputKeyDown} />
 
-      <p>{list.filter((listItem) => listItem.isCompleted).length}</p>
+      <p>Completed tasks: {list.filter((listItem) => listItem.isCompleted).length}</p>
 
       <ul>
         {list.map((listItem, index) => {
